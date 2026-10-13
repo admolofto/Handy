@@ -21,49 +21,13 @@ const STREAM_IDLE_TIMEOUT: Duration = Duration::from_secs(30);
 const SILERO_VAD_THRESHOLD: f32 = 0.3;
 const EARSHOT_VAD_THRESHOLD: f32 = 0.5;
 
+#[cfg(not(target_os = "windows"))]
 fn set_mute(mute: bool) {
     // Expected behavior:
-    // - Windows: works on most systems using standard audio drivers.
     // - Linux: works on many systems (PipeWire, PulseAudio, ALSA),
     //   but some distros may lack the tools used.
     // - macOS: works on most standard setups via AppleScript.
     // If unsupported, fails silently.
-
-    #[cfg(target_os = "windows")]
-    {
-        unsafe {
-            use windows::Win32::{
-                Media::Audio::{
-                    eMultimedia, eRender, Endpoints::IAudioEndpointVolume, IMMDeviceEnumerator,
-                    MMDeviceEnumerator,
-                },
-                System::Com::{CoCreateInstance, CoInitializeEx, CLSCTX_ALL, COINIT_MULTITHREADED},
-            };
-
-            macro_rules! unwrap_or_return {
-                ($expr:expr) => {
-                    match $expr {
-                        Ok(val) => val,
-                        Err(_) => return,
-                    }
-                };
-            }
-
-            // Initialize the COM library for this thread.
-            // If already initialized (e.g., by another library like Tauri), this does nothing.
-            let _ = CoInitializeEx(None, COINIT_MULTITHREADED);
-
-            let all_devices: IMMDeviceEnumerator =
-                unwrap_or_return!(CoCreateInstance(&MMDeviceEnumerator, None, CLSCTX_ALL));
-            let default_device =
-                unwrap_or_return!(all_devices.GetDefaultAudioEndpoint(eRender, eMultimedia));
-            let volume_interface = unwrap_or_return!(
-                default_device.Activate::<IAudioEndpointVolume>(CLSCTX_ALL, None)
-            );
-
-            let _ = volume_interface.SetMute(mute, std::ptr::null());
-        }
-    }
 
     #[cfg(target_os = "linux")]
     {
@@ -116,33 +80,6 @@ fn set_mute(mute: bool) {
 /// `None` when it couldn't (unsupported platform, missing CLI tools, or an
 /// error). Callers treat `None` as "unknown" and fall back to unmuting on stop,
 /// so we never strand the user's audio muted.
-#[cfg(target_os = "windows")]
-fn get_mute() -> Option<bool> {
-    unsafe {
-        use windows::Win32::{
-            Media::Audio::{
-                eMultimedia, eRender, Endpoints::IAudioEndpointVolume, IMMDeviceEnumerator,
-                MMDeviceEnumerator,
-            },
-            System::Com::{CoCreateInstance, CoInitializeEx, CLSCTX_ALL, COINIT_MULTITHREADED},
-        };
-
-        // Matches set_mute: no-op if COM is already initialized on this thread.
-        let _ = CoInitializeEx(None, COINIT_MULTITHREADED);
-
-        let all_devices: IMMDeviceEnumerator =
-            CoCreateInstance(&MMDeviceEnumerator, None, CLSCTX_ALL).ok()?;
-        let default_device = all_devices
-            .GetDefaultAudioEndpoint(eRender, eMultimedia)
-            .ok()?;
-        let volume_interface = default_device
-            .Activate::<IAudioEndpointVolume>(CLSCTX_ALL, None)
-            .ok()?;
-
-        Some(volume_interface.GetMute().ok()?.as_bool())
-    }
-}
-
 #[cfg(target_os = "linux")]
 fn get_mute() -> Option<bool> {
     use std::process::Command;
@@ -225,9 +162,137 @@ fn get_mute() -> Option<bool> {
 /// the system was NOT already muted beforehand. If the prior state was muted,
 /// we leave it muted (the user's own state). If it's unknown (`None`), we
 /// default to unmuting so audio is never left stranded muted by us.
+#[cfg(not(target_os = "windows"))]
 fn restore_mute(prev_muted: Option<bool>) {
     if prev_muted != Some(true) {
         set_mute(false);
+    }
+}
+
+/// What `quiet_system_audio` changed, for `restore_system_audio` to undo.
+#[cfg(target_os = "windows")]
+type QuietSnapshot = windows_ducking::Snapshot;
+#[cfg(not(target_os = "windows"))]
+type QuietSnapshot = Option<bool>;
+
+/// Quiets other audio for a recording. On Windows other apps are lowered to
+/// half volume rather than muting the output device: muting the device also
+/// silences a headset's sidetone (hearing your own voice), which headsets
+/// like the Logitech PRO X 2 mix into that same output.
+#[cfg(target_os = "windows")]
+fn quiet_system_audio() -> QuietSnapshot {
+    windows_ducking::duck()
+}
+
+#[cfg(not(target_os = "windows"))]
+fn quiet_system_audio() -> QuietSnapshot {
+    let prev_muted = get_mute();
+    set_mute(true);
+    prev_muted
+}
+
+#[cfg(target_os = "windows")]
+fn restore_system_audio(snapshot: &QuietSnapshot) {
+    windows_ducking::restore(snapshot);
+}
+
+#[cfg(not(target_os = "windows"))]
+fn restore_system_audio(snapshot: &QuietSnapshot) {
+    restore_mute(*snapshot);
+}
+
+#[cfg(target_os = "windows")]
+mod windows_ducking {
+    use log::debug;
+    use windows::core::Interface;
+    use windows::Win32::{
+        Media::Audio::{
+            eMultimedia, eRender, IAudioSessionControl2, IAudioSessionManager2,
+            IMMDeviceEnumerator, ISimpleAudioVolume, MMDeviceEnumerator,
+        },
+        System::Com::{
+            CoCreateInstance, CoInitializeEx, CoTaskMemFree, CLSCTX_ALL, COINIT_MULTITHREADED,
+        },
+    };
+
+    /// Share of its volume each other app keeps while recording.
+    const DUCKED_FRACTION: f32 = 0.5;
+
+    /// Each lowered session's instance id and the volume it had before.
+    pub type Snapshot = Vec<(String, f32)>;
+
+    /// Calls `f` with every audio session on the default output device except
+    /// Handy's own (so feedback sounds keep their volume). Errors skip the
+    /// session, or all of them if the device can't be reached.
+    fn for_each_other_session(mut f: impl FnMut(String, &ISimpleAudioVolume)) {
+        let result: windows::core::Result<()> = unsafe {
+            (|| {
+                // No-op if COM is already initialized on this thread.
+                let _ = CoInitializeEx(None, COINIT_MULTITHREADED);
+                let devices: IMMDeviceEnumerator =
+                    CoCreateInstance(&MMDeviceEnumerator, None, CLSCTX_ALL)?;
+                let device = devices.GetDefaultAudioEndpoint(eRender, eMultimedia)?;
+                let manager = device.Activate::<IAudioSessionManager2>(CLSCTX_ALL, None)?;
+                let sessions = manager.GetSessionEnumerator()?;
+                let own_pid = std::process::id();
+
+                for i in 0..sessions.GetCount()? {
+                    let Ok(control) = sessions.GetSession(i) else {
+                        continue;
+                    };
+                    let Ok(control2) = control.cast::<IAudioSessionControl2>() else {
+                        continue;
+                    };
+                    if control2.GetProcessId().ok() == Some(own_pid) {
+                        continue;
+                    }
+                    let Ok(raw_id) = control2.GetSessionInstanceIdentifier() else {
+                        continue;
+                    };
+                    let id = raw_id.to_string().ok();
+                    CoTaskMemFree(Some(raw_id.0 as *const _));
+                    let (Some(id), Ok(volume)) = (id, control.cast::<ISimpleAudioVolume>()) else {
+                        continue;
+                    };
+                    f(id, &volume);
+                }
+                Ok(())
+            })()
+        };
+        if let Err(e) = result {
+            debug!("Couldn't reach audio sessions: {e}");
+        }
+    }
+
+    pub fn duck() -> Snapshot {
+        let mut snapshot = Snapshot::new();
+        for_each_other_session(|id, volume| unsafe {
+            if let Ok(level) = volume.GetMasterVolume() {
+                if volume
+                    .SetMasterVolume(level * DUCKED_FRACTION, std::ptr::null())
+                    .is_ok()
+                {
+                    snapshot.push((id, level));
+                }
+            }
+        });
+        snapshot
+    }
+
+    /// Puts each lowered session back, unless its volume was changed while
+    /// recording: that is the user's choice and stays.
+    pub fn restore(snapshot: &Snapshot) {
+        for_each_other_session(|id, volume| unsafe {
+            let Some(&(_, original)) = snapshot.iter().find(|(saved, _)| *saved == id) else {
+                return;
+            };
+            let Ok(current) = volume.GetMasterVolume() else {
+                return;
+            };
+            if (current - original * DUCKED_FRACTION).abs() < 0.01 {
+                let _ = volume.SetMasterVolume(original, std::ptr::null());
+            }
+        });
     }
 }
 
@@ -249,13 +314,13 @@ pub enum MicrophoneMode {
 }
 
 /// Tracks our forced "mute while recording" so we can restore the user's audio
-/// exactly as it was. `did_mute` is true while our mute is active; `prev_muted`
-/// is the system mute state captured just before we muted, used to decide
-/// whether to unmute on stop (so a system that was already muted stays muted).
-#[derive(Debug, Default, Clone, Copy)]
+/// exactly as it was. `did_mute` is true while our mute is active; `prev` is
+/// what `quiet_system_audio` changed (the prior system mute state, or on
+/// Windows each lowered app's volume), used to restore it on stop.
+#[derive(Debug, Default, Clone)]
 struct MuteState {
     did_mute: bool,
-    prev_muted: Option<bool>,
+    prev: QuietSnapshot,
 }
 
 /// The persisted microphone preference currently in effect. Clamshell and
@@ -731,16 +796,15 @@ impl AudioRecordingManager {
         let is_open = self.is_open.lock().unwrap();
         let mut mute_guard = self.mute_state.lock().unwrap();
         // Already muted this session — don't re-snapshot, or a duplicate/late
-        // apply would overwrite prev_muted with our own forced-muted state and
-        // strand audio muted on stop.
+        // apply would overwrite prev with our own forced state and
+        // strand audio muted (or lowered) on stop.
         if mute_guard.did_mute {
             return;
         }
         if *is_open {
-            mute_guard.prev_muted = get_mute();
-            set_mute(true);
+            mute_guard.prev = quiet_system_audio();
             mute_guard.did_mute = true;
-            debug!("Mute applied (prev_muted={:?})", mute_guard.prev_muted);
+            debug!("Mute applied (prev={:?})", mute_guard.prev);
         }
     }
 
@@ -749,12 +813,9 @@ impl AudioRecordingManager {
     pub fn remove_mute(&self) {
         let mut mute_guard = self.mute_state.lock().unwrap();
         if mute_guard.did_mute {
-            restore_mute(mute_guard.prev_muted);
+            restore_system_audio(&mute_guard.prev);
             mute_guard.did_mute = false;
-            debug!(
-                "Mute removed (restored prev_muted={:?})",
-                mute_guard.prev_muted
-            );
+            debug!("Mute removed (restored prev={:?})", mute_guard.prev);
         }
     }
 
@@ -787,7 +848,7 @@ impl AudioRecordingManager {
             {
                 let mut mute_guard = self.mute_state.lock().unwrap();
                 if mute_guard.did_mute {
-                    restore_mute(mute_guard.prev_muted);
+                    restore_system_audio(&mute_guard.prev);
                     mute_guard.did_mute = false;
                 }
             }
@@ -810,7 +871,7 @@ impl AudioRecordingManager {
         {
             let mut mute_guard = self.mute_state.lock().unwrap();
             if mute_guard.did_mute {
-                restore_mute(mute_guard.prev_muted);
+                restore_system_audio(&mute_guard.prev);
                 mute_guard.did_mute = false;
             }
         }
@@ -881,7 +942,7 @@ impl AudioRecordingManager {
         {
             let mut mute_guard = self.mute_state.lock().unwrap();
             if mute_guard.did_mute {
-                restore_mute(mute_guard.prev_muted);
+                restore_system_audio(&mute_guard.prev);
             }
             mute_guard.did_mute = false;
         }

@@ -565,7 +565,7 @@
       },
       "muteWhileRecording": {
         "label": "Mute While Recording",
-        "description": "Mute system audio during recording"
+        "description": "Mute system audio during recording. On Windows, other apps are lowered to half volume instead, so headset sidetone keeps working."
       },
       "appendTrailingSpace": {
         "label": "Append Trailing Space",
