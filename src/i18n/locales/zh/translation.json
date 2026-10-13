@@ -256,6 +256,10 @@
       "volume": {
         "title": "音量",
         "description": "调整音频反馈的音量"
+      },
+      "otherAudioVolume": {
+        "title": "其他音频音量",
+        "description": "听写时其他应用保留的音量，占其正常音量的比例"
       }
     },
     "advanced": {

@@ -256,6 +256,10 @@
       "volume": {
         "title": "Volume",
         "description": "Sesuaikan volume suara umpan balik audio"
+      },
+      "otherAudioVolume": {
+        "title": "Volume audio lain",
+        "description": "Seberapa keras aplikasi lain tetap terdengar saat Anda mendikte, sebagai bagian dari volume normalnya"
       }
     },
     "advanced": {

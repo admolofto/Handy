@@ -256,6 +256,10 @@
       "volume": {
         "title": "Lydstyrke",
         "description": "Juster lydstyrken for lydfeedback"
+      },
+      "otherAudioVolume": {
+        "title": "Lydstyrke for anden lyd",
+        "description": "Hvor højt andre apps spiller, mens du dikterer, som andel af deres normale lydstyrke"
       }
     },
     "advanced": {

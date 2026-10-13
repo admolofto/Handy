@@ -256,6 +256,10 @@
       "volume": {
         "title": "Volume",
         "description": "Pas het volume van de geluidsfeedback aan"
+      },
+      "otherAudioVolume": {
+        "title": "Volume van ander geluid",
+        "description": "Hoe hard andere apps blijven terwijl je dicteert, als deel van hun normale volume"
       }
     },
     "advanced": {

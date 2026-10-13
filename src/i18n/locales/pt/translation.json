@@ -256,6 +256,10 @@
       "volume": {
         "title": "Volume",
         "description": "Ajustar o volume dos sons de feedback de áudio"
+      },
+      "otherAudioVolume": {
+        "title": "Volume do outro áudio",
+        "description": "Quão alto os outros apps ficam enquanto você dita, como parte do volume normal deles"
       }
     },
     "advanced": {

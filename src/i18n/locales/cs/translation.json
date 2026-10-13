@@ -256,6 +256,10 @@
       "volume": {
         "title": "Hlasitost",
         "description": "Upravte hlasitost zvukové odezvy"
+      },
+      "otherAudioVolume": {
+        "title": "Hlasitost ostatního zvuku",
+        "description": "Jak hlasité zůstanou ostatní aplikace během diktování, jako podíl jejich běžné hlasitosti"
       }
     },
     "advanced": {

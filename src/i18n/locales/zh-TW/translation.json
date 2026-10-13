@@ -256,6 +256,10 @@
       "volume": {
         "title": "音量",
         "description": "調整聲音回饋的音量"
+      },
+      "otherAudioVolume": {
+        "title": "其他音訊音量",
+        "description": "聽寫時其他應用程式保留的音量，占其正常音量的比例"
       }
     },
     "advanced": {
