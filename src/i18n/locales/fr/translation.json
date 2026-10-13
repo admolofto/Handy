@@ -14,6 +14,7 @@
     "models": "Modèles",
     "advanced": "Avancé",
     "postProcessing": "Post-traitement",
+    "notes": "Notes",
     "history": "Historique",
     "debug": "Débogage",
     "about": "À propos"
@@ -199,6 +200,10 @@
           "transcribe_with_post_process": {
             "name": "Raccourci de post-traitement",
             "description": "Facultatif : Un raccourci dédié qui applique toujours le post-traitement IA à votre transcription."
+          },
+          "transcribe_to_note": {
+            "name": "Notes Hotkey",
+            "description": "Records your voice and adds the transcription to your notes inbox instead of pasting it."
           }
         },
         "errors": {
@@ -269,6 +274,10 @@
       "experimentalToggle": {
         "label": "Fonctionnalités Expérimentales",
         "description": "Activer les fonctionnalités expérimentales encore en développement."
+      },
+      "notesToggle": {
+        "label": "Notes Mode",
+        "description": "Adds a hotkey that saves what you say as plain markdown notes instead of pasting it."
       },
       "lazyStreamClose": {
         "label": "Garder le micro ouvert entre les transcriptions",
@@ -470,6 +479,18 @@
         "cancel": "Annuler",
         "selectToEdit": "Sélectionnez un prompt ci-dessus pour voir et modifier ses détails.",
         "createFirst": "Cliquez sur 'Créer un nouveau prompt' ci-dessus pour créer votre premier prompt de post-traitement."
+      }
+    },
+    "notes": {
+      "hotkey": {
+        "title": "Hotkey"
+      },
+      "folder": {
+        "groupTitle": "Notes Folder",
+        "title": "Notes Folder",
+        "description": "Each capture is added to inbox/YYYY-MM-DD.md inside this folder as plain markdown that any editor or AI tool can read.",
+        "choose": "Choose Folder…",
+        "reset": "Use Default"
       }
     },
     "history": {
@@ -700,7 +721,8 @@
     "modelLoadFailedUnknown": "modèle inconnu",
     "pasteFailedTitle": "Échec du collage du texte",
     "pasteFailed": "Le texte n'a pas pu être collé dans l'application active.",
-    "transcriptionFailedTitle": "Échec de la transcription"
+    "transcriptionFailedTitle": "Échec de la transcription",
+    "noteSaveFailedTitle": "Couldn't Save Note"
   },
   "appLanguage": {
     "title": "Langue de l'application",

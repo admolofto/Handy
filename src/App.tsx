@@ -194,6 +194,18 @@ function App() {
     };
   }, [t]);
 
+  // Show a toast when notes mode can't write to the notes folder
+  useEffect(() => {
+    const unlisten = listen<string>("note-save-error", (event) => {
+      toast.error(t("errors.noteSaveFailedTitle"), {
+        description: event.payload,
+      });
+    });
+    return () => {
+      unlisten.then((fn) => fn());
+    };
+  }, [t]);
+
   // Listen for model loading failures and show a toast
   useEffect(() => {
     const unlisten = listen<ModelStateEvent>("model-state-changed", (event) => {

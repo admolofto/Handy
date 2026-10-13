@@ -14,6 +14,7 @@
     "models": "Models",
     "advanced": "Advanced",
     "postProcessing": "Post Process",
+    "notes": "Notes",
     "history": "History",
     "debug": "Debug",
     "about": "About"
@@ -179,6 +180,10 @@
           "transcribe_with_post_process": {
             "name": "Post-Processing Hotkey",
             "description": "Optional: A dedicated hotkey that always applies AI post-processing to your transcription."
+          },
+          "transcribe_to_note": {
+            "name": "Notes Hotkey",
+            "description": "Records your voice and adds the transcription to your notes inbox instead of pasting it."
           }
         },
         "errors": {
@@ -269,6 +274,10 @@
       "experimentalToggle": {
         "label": "Experimental Features",
         "description": "Enable experimental features that are still in development."
+      },
+      "notesToggle": {
+        "label": "Notes Mode",
+        "description": "Adds a hotkey that saves what you say as plain markdown notes instead of pasting it."
       },
       "lazyStreamClose": {
         "label": "Keep Mic Open Between Transcriptions",
@@ -470,6 +479,18 @@
         "cancel": "Cancel",
         "selectToEdit": "Select a prompt above to view and edit its details.",
         "createFirst": "Click 'Create New Prompt' above to create your first post-processing prompt."
+      }
+    },
+    "notes": {
+      "hotkey": {
+        "title": "Hotkey"
+      },
+      "folder": {
+        "groupTitle": "Notes Folder",
+        "title": "Notes Folder",
+        "description": "Each capture is added to inbox/YYYY-MM-DD.md inside this folder as plain markdown that any editor or AI tool can read.",
+        "choose": "Choose Folder…",
+        "reset": "Use Default"
       }
     },
     "history": {
@@ -703,7 +724,8 @@
     "modelLoadFailedUnknown": "unknown model",
     "pasteFailedTitle": "Failed to Paste Text",
     "pasteFailed": "Text could not be pasted into the active application.",
-    "transcriptionFailedTitle": "Transcription Failed"
+    "transcriptionFailedTitle": "Transcription Failed",
+    "noteSaveFailedTitle": "Couldn't Save Note"
   },
   "appLanguage": {
     "title": "Application Language",

@@ -14,6 +14,7 @@
     "models": "Modele",
     "advanced": "Zaawansowane",
     "postProcessing": "Postproces",
+    "notes": "Notes",
     "history": "Historia",
     "debug": "Debugowanie",
     "about": "O programie"
@@ -199,6 +200,10 @@
           "transcribe_with_post_process": {
             "name": "Skrót postprocessingu",
             "description": "Opcjonalnie: Dedykowany skrót klawiszowy, który zawsze stosuje postprocessing AI do transkrypcji."
+          },
+          "transcribe_to_note": {
+            "name": "Notes Hotkey",
+            "description": "Records your voice and adds the transcription to your notes inbox instead of pasting it."
           }
         },
         "errors": {
@@ -269,6 +274,10 @@
       "experimentalToggle": {
         "label": "Funkcje Eksperymentalne",
         "description": "Włącz funkcje eksperymentalne, które są jeszcze w fazie rozwoju."
+      },
+      "notesToggle": {
+        "label": "Notes Mode",
+        "description": "Adds a hotkey that saves what you say as plain markdown notes instead of pasting it."
       },
       "lazyStreamClose": {
         "label": "Pozostaw mikrofon otwarty między transkrypcjami",
@@ -470,6 +479,18 @@
         "cancel": "Anuluj",
         "selectToEdit": "Wybierz prompt powyżej, aby zobaczyć i edytować jego szczegóły.",
         "createFirst": "Kliknij 'Utwórz nowy prompt' powyżej, aby utworzyć pierwszy prompt postprocessingu."
+      }
+    },
+    "notes": {
+      "hotkey": {
+        "title": "Hotkey"
+      },
+      "folder": {
+        "groupTitle": "Notes Folder",
+        "title": "Notes Folder",
+        "description": "Each capture is added to inbox/YYYY-MM-DD.md inside this folder as plain markdown that any editor or AI tool can read.",
+        "choose": "Choose Folder…",
+        "reset": "Use Default"
       }
     },
     "history": {
@@ -700,7 +721,8 @@
     "modelLoadFailedUnknown": "nieznany model",
     "pasteFailedTitle": "Nie udało się wkleić tekstu",
     "pasteFailed": "Nie można było wkleić tekstu do aktywnej aplikacji.",
-    "transcriptionFailedTitle": "Transkrypcja nie powiodła się"
+    "transcriptionFailedTitle": "Transkrypcja nie powiodła się",
+    "noteSaveFailedTitle": "Couldn't Save Note"
   },
   "appLanguage": {
     "title": "Język aplikacji",

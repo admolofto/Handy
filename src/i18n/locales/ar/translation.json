@@ -13,6 +13,7 @@
     "general": "عام",
     "advanced": "متقدم",
     "postProcessing": "معالجة لاحقة",
+    "notes": "Notes",
     "history": "السجل",
     "debug": "تصحيح الأخطاء",
     "about": "حول",
@@ -176,6 +177,10 @@
           "transcribe_with_post_process": {
             "name": "مفتاح المعالجة اللاحقة",
             "description": "اختياري: مفتاح اختصار مخصص يطبق دائماً المعالجة اللاحقة بالذكاء الاصطناعي على التفريغ الصوتي."
+          },
+          "transcribe_to_note": {
+            "name": "Notes Hotkey",
+            "description": "Records your voice and adds the transcription to your notes inbox instead of pasting it."
           }
         },
         "errors": {
@@ -246,6 +251,10 @@
       "experimentalToggle": {
         "label": "الميزات التجريبية",
         "description": ".تمكين الميزات التجريبية التي لا تزال قيد التطوير"
+      },
+      "notesToggle": {
+        "label": "Notes Mode",
+        "description": "Adds a hotkey that saves what you say as plain markdown notes instead of pasting it."
       },
       "lazyStreamClose": {
         "label": "إبقاء الميكروفون مفتوحًا بين عمليات النسخ",
@@ -447,6 +456,18 @@
         "cancel": "إلغاء",
         "selectToEdit": ".اختر مطالبة أعلاه لعرض وتعديل تفاصيلها",
         "createFirst": ".انقر على 'إنشاء مطالبة جديدة' أعلاه لإنشاء أول مطالبة معالجة لاحقة لك"
+      }
+    },
+    "notes": {
+      "hotkey": {
+        "title": "Hotkey"
+      },
+      "folder": {
+        "groupTitle": "Notes Folder",
+        "title": "Notes Folder",
+        "description": "Each capture is added to inbox/YYYY-MM-DD.md inside this folder as plain markdown that any editor or AI tool can read.",
+        "choose": "Choose Folder…",
+        "reset": "Use Default"
       }
     },
     "history": {
@@ -700,7 +721,8 @@
     "modelLoadFailedUnknown": "نموذج غير معروف",
     "pasteFailedTitle": "فشل لصق النص",
     "pasteFailed": "تعذر لصق النص في التطبيق النشط.",
-    "transcriptionFailedTitle": "فشل التفريغ النصي"
+    "transcriptionFailedTitle": "فشل التفريغ النصي",
+    "noteSaveFailedTitle": "Couldn't Save Note"
   },
   "appLanguage": {
     "title": "لغة التطبيق",

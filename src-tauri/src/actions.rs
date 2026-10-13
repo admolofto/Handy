@@ -56,6 +56,8 @@ pub trait ShortcutAction: Send + Sync {
 // Transcribe Action
 struct TranscribeAction {
     post_process: bool,
+    /// Append the result to the notes inbox instead of pasting it.
+    to_note: bool,
 }
 
 /// Field name for structured output JSON schema
@@ -594,6 +596,7 @@ impl ShortcutAction for TranscribeAction {
 
         let binding_id = binding_id.to_string(); // Clone binding_id for the async task
         let post_process = self.post_process;
+        let to_note = self.to_note;
         let cancel_generation = rm.cancel_generation();
 
         tauri::async_runtime::spawn(async move {
@@ -733,6 +736,18 @@ impl ShortcutAction for TranscribeAction {
                             if processed.final_text.is_empty() {
                                 utils::hide_recording_overlay(&ah);
                                 set_tray_state(&ah, TrayIconState::Idle);
+                            } else if to_note {
+                                match crate::notes::capture(&ah, &processed.final_text) {
+                                    Ok(path) => {
+                                        debug!("Transcription saved to {}", path.display())
+                                    }
+                                    Err(e) => {
+                                        error!("Failed to save transcription to note: {}", e);
+                                        let _ = ah.emit("note-save-error", e);
+                                    }
+                                }
+                                utils::hide_recording_overlay(&ah);
+                                set_tray_state(&ah, TrayIconState::Idle);
                             } else {
                                 let ah_clone = ah.clone();
                                 let paste_time = Instant::now();
@@ -856,11 +871,22 @@ pub static ACTION_MAP: Lazy<HashMap<String, Arc<dyn ShortcutAction>>> = Lazy::ne
         "transcribe".to_string(),
         Arc::new(TranscribeAction {
             post_process: false,
+            to_note: false,
         }) as Arc<dyn ShortcutAction>,
     );
     map.insert(
         "transcribe_with_post_process".to_string(),
-        Arc::new(TranscribeAction { post_process: true }) as Arc<dyn ShortcutAction>,
+        Arc::new(TranscribeAction {
+            post_process: true,
+            to_note: false,
+        }) as Arc<dyn ShortcutAction>,
+    );
+    map.insert(
+        "transcribe_to_note".to_string(),
+        Arc::new(TranscribeAction {
+            post_process: false,
+            to_note: true,
+        }) as Arc<dyn ShortcutAction>,
     );
     map.insert(
         "cancel".to_string(),

@@ -14,6 +14,7 @@
     "models": "Mô hình",
     "advanced": "Nâng cao",
     "postProcessing": "Xử lý sau",
+    "notes": "Notes",
     "history": "Lịch sử",
     "debug": "Gỡ lỗi",
     "about": "Giới thiệu"
@@ -199,6 +200,10 @@
           "transcribe_with_post_process": {
             "name": "Phím tắt xử lý sau",
             "description": "Tùy chọn: Phím tắt chuyên dụng luôn áp dụng xử lý sau bằng AI cho bản chuyển đổi của bạn."
+          },
+          "transcribe_to_note": {
+            "name": "Notes Hotkey",
+            "description": "Records your voice and adds the transcription to your notes inbox instead of pasting it."
           }
         },
         "errors": {
@@ -269,6 +274,10 @@
       "experimentalToggle": {
         "label": "Tính năng thử nghiệm",
         "description": "Bật các tính năng thử nghiệm đang trong quá trình phát triển."
+      },
+      "notesToggle": {
+        "label": "Notes Mode",
+        "description": "Adds a hotkey that saves what you say as plain markdown notes instead of pasting it."
       },
       "lazyStreamClose": {
         "label": "Giữ micro mở giữa các lần phiên âm",
@@ -470,6 +479,18 @@
         "cancel": "Hủy",
         "selectToEdit": "Chọn một prompt ở trên để xem và chỉnh sửa chi tiết.",
         "createFirst": "Nhấn 'Tạo Prompt mới' ở trên để tạo prompt xử lý sau đầu tiên của bạn."
+      }
+    },
+    "notes": {
+      "hotkey": {
+        "title": "Hotkey"
+      },
+      "folder": {
+        "groupTitle": "Notes Folder",
+        "title": "Notes Folder",
+        "description": "Each capture is added to inbox/YYYY-MM-DD.md inside this folder as plain markdown that any editor or AI tool can read.",
+        "choose": "Choose Folder…",
+        "reset": "Use Default"
       }
     },
     "history": {
@@ -700,7 +721,8 @@
     "modelLoadFailedUnknown": "mô hình không xác định",
     "pasteFailedTitle": "Không thể dán văn bản",
     "pasteFailed": "Không thể dán văn bản vào ứng dụng đang hoạt động.",
-    "transcriptionFailedTitle": "Phiên âm thất bại"
+    "transcriptionFailedTitle": "Phiên âm thất bại",
+    "noteSaveFailedTitle": "Couldn't Save Note"
   },
   "appLanguage": {
     "title": "Ngôn ngữ ứng dụng",

@@ -483,6 +483,13 @@ pub struct AppSettings {
     pub post_process_prompts: Vec<LLMPrompt>,
     #[serde(default)]
     pub post_process_selected_prompt_id: Option<String>,
+    /// Notes mode: the `transcribe_to_note` shortcut appends transcriptions
+    /// to a markdown inbox instead of pasting them.
+    #[serde(default)]
+    pub notes_enabled: bool,
+    /// Folder that holds the notes. `None` uses `notes::default_notes_dir`.
+    #[serde(default)]
+    pub notes_dir: Option<String>,
     #[serde(default)]
     pub mute_while_recording: bool,
     #[serde(default)]
@@ -952,6 +959,26 @@ pub fn get_default_settings() -> AppSettings {
             current_binding: default_post_process_shortcut.to_string(),
         },
     );
+    #[cfg(target_os = "windows")]
+    let default_note_shortcut = "ctrl+alt+space";
+    #[cfg(target_os = "macos")]
+    let default_note_shortcut = "option+ctrl+space";
+    #[cfg(target_os = "linux")]
+    let default_note_shortcut = "ctrl+alt+space";
+    #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
+    let default_note_shortcut = "alt+ctrl+space";
+
+    bindings.insert(
+        "transcribe_to_note".to_string(),
+        ShortcutBinding {
+            id: "transcribe_to_note".to_string(),
+            name: "Transcribe to Note".to_string(),
+            description: "Converts your speech into text and adds it to your notes inbox."
+                .to_string(),
+            default_binding: default_note_shortcut.to_string(),
+            current_binding: default_note_shortcut.to_string(),
+        },
+    );
     bindings.insert(
         "cancel".to_string(),
         ShortcutBinding {
@@ -1004,6 +1031,8 @@ pub fn get_default_settings() -> AppSettings {
         post_process_models: default_post_process_models(),
         post_process_prompts: default_post_process_prompts(),
         post_process_selected_prompt_id: None,
+        notes_enabled: false,
+        notes_dir: None,
         mute_while_recording: false,
         append_trailing_space: false,
         app_language: default_app_language(),
@@ -1037,6 +1066,16 @@ impl Default for AppSettings {
 }
 
 impl AppSettings {
+    /// Whether a binding's feature is switched on, so its shortcut should be
+    /// registered. Feature-gated bindings stay unregistered while disabled.
+    pub fn is_binding_enabled(&self, id: &str) -> bool {
+        match id {
+            "transcribe_with_post_process" => self.post_process_enabled,
+            "transcribe_to_note" => self.notes_enabled,
+            _ => true,
+        }
+    }
+
     pub fn active_post_process_provider(&self) -> Option<&PostProcessProvider> {
         self.post_process_providers
             .iter()
@@ -1364,6 +1403,17 @@ mod tests {
     /// `#[serde(alias)]`/`#[serde(other)]` or a one-time migration in
     /// `apply_settings_migrations` so old values keep loading, and only extend
     /// the fixture alongside that.
+    #[test]
+    fn notes_binding_is_gated_by_notes_enabled() {
+        let mut settings = get_default_settings();
+        assert!(settings.bindings.contains_key("transcribe_to_note"));
+        assert!(!settings.is_binding_enabled("transcribe_to_note"));
+        assert!(settings.is_binding_enabled("transcribe"));
+
+        settings.notes_enabled = true;
+        assert!(settings.is_binding_enabled("transcribe_to_note"));
+    }
+
     #[test]
     fn frozen_v0_9_store_parses_strictly_then_migrates_device_index() {
         // Note "log_level": 2 — the legacy numeric format, kept deliberately.

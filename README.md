@@ -98,6 +98,7 @@ Handy supports command-line flags for controlling a running instance and customi
 ```bash
 handy --toggle-transcription    # Toggle recording on/off
 handy --toggle-post-process     # Toggle recording with post-processing on/off
+handy --toggle-note             # Toggle recording into the notes inbox on/off
 handy --cancel                  # Cancel the current operation
 ```
 
@@ -216,6 +217,7 @@ Without these tools, Handy falls back to enigo which may have limited compatibil
   | ----------------------------------------- | -------------------------------------------------------- |
   | Toggle transcription                      | `pkill -USR2 -n handy` or `handy --toggle-transcription` |
   | Toggle transcription with post-processing | `handy --toggle-post-process`                            |
+  | Toggle transcription into notes           | `handy --toggle-note`                                    |
 
   Example Sway config:
 
