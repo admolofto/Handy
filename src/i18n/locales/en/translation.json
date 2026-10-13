@@ -256,6 +256,10 @@
       "volume": {
         "title": "Volume",
         "description": "Adjust the volume of audio feedback sounds"
+      },
+      "otherAudioVolume": {
+        "title": "Other Audio Volume",
+        "description": "How loud other apps stay while you dictate, as a share of their normal volume"
       }
     },
     "advanced": {
@@ -564,8 +568,8 @@
         "description": "Enable AI-powered text refinement after transcription"
       },
       "muteWhileRecording": {
-        "label": "Mute While Recording",
-        "description": "Mute system audio during recording. On Windows, other apps are lowered to half volume instead, so headset sidetone keeps working."
+        "label": "Lower Other Audio While Recording",
+        "description": "Turn other apps down while you dictate, so your headset's sidetone keeps working. On macOS and Linux, system audio is muted instead."
       },
       "appendTrailingSpace": {
         "label": "Append Trailing Space",

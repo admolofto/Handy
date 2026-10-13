@@ -176,16 +176,16 @@ type QuietSnapshot = windows_ducking::Snapshot;
 type QuietSnapshot = Option<bool>;
 
 /// Quiets other audio for a recording. On Windows other apps are lowered to
-/// half volume rather than muting the output device: muting the device also
+/// `other_audio_volume` of their volume rather than muting the output device: muting the device also
 /// silences a headset's sidetone (hearing your own voice), which headsets
 /// like the Logitech PRO X 2 mix into that same output.
 #[cfg(target_os = "windows")]
-fn quiet_system_audio() -> QuietSnapshot {
-    windows_ducking::duck()
+fn quiet_system_audio(other_audio_volume: f32) -> QuietSnapshot {
+    windows_ducking::duck(other_audio_volume)
 }
 
 #[cfg(not(target_os = "windows"))]
-fn quiet_system_audio() -> QuietSnapshot {
+fn quiet_system_audio(_other_audio_volume: f32) -> QuietSnapshot {
     let prev_muted = get_mute();
     set_mute(true);
     prev_muted
@@ -215,11 +215,9 @@ mod windows_ducking {
         },
     };
 
-    /// Share of its volume each other app keeps while recording.
-    const DUCKED_FRACTION: f32 = 0.5;
-
-    /// Each lowered session's instance id and the volume it had before.
-    pub type Snapshot = Vec<(String, f32)>;
+    /// Each lowered session's instance id, the volume it had before, and the
+    /// volume we lowered it to.
+    pub type Snapshot = Vec<(String, f32, f32)>;
 
     /// Calls `f` with every audio session on the default output device except
     /// Handy's own (so feedback sounds keep their volume). Errors skip the
@@ -264,15 +262,15 @@ mod windows_ducking {
         }
     }
 
-    pub fn duck() -> Snapshot {
+    /// Lowers every other app to `fraction` of its current volume.
+    pub fn duck(fraction: f32) -> Snapshot {
+        let fraction = fraction.clamp(0.0, 1.0);
         let mut snapshot = Snapshot::new();
         for_each_other_session(|id, volume| unsafe {
             if let Ok(level) = volume.GetMasterVolume() {
-                if volume
-                    .SetMasterVolume(level * DUCKED_FRACTION, std::ptr::null())
-                    .is_ok()
-                {
-                    snapshot.push((id, level));
+                let lowered = level * fraction;
+                if volume.SetMasterVolume(lowered, std::ptr::null()).is_ok() {
+                    snapshot.push((id, level, lowered));
                 }
             }
         });
@@ -283,13 +281,14 @@ mod windows_ducking {
     /// recording: that is the user's choice and stays.
     pub fn restore(snapshot: &Snapshot) {
         for_each_other_session(|id, volume| unsafe {
-            let Some(&(_, original)) = snapshot.iter().find(|(saved, _)| *saved == id) else {
+            let Some(&(_, original, lowered)) = snapshot.iter().find(|(saved, ..)| *saved == id)
+            else {
                 return;
             };
             let Ok(current) = volume.GetMasterVolume() else {
                 return;
             };
-            if (current - original * DUCKED_FRACTION).abs() < 0.01 {
+            if (current - lowered).abs() < 0.01 {
                 let _ = volume.SetMasterVolume(original, std::ptr::null());
             }
         });
@@ -802,7 +801,7 @@ impl AudioRecordingManager {
             return;
         }
         if *is_open {
-            mute_guard.prev = quiet_system_audio();
+            mute_guard.prev = quiet_system_audio(settings.other_audio_volume);
             mute_guard.did_mute = true;
             debug!("Mute applied (prev={:?})", mute_guard.prev);
         }

@@ -256,6 +256,10 @@
       "volume": {
         "title": "Volym",
         "description": "Justera volymen för ljudåterkopplingsljud"
+      },
+      "otherAudioVolume": {
+        "title": "Volym för annat ljud",
+        "description": "Hur högt andra appar spelar medan du dikterar, som andel av deras vanliga volym"
       }
     },
     "advanced": {

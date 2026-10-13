@@ -485,6 +485,10 @@ pub struct AppSettings {
     pub post_process_selected_prompt_id: Option<String>,
     #[serde(default)]
     pub mute_while_recording: bool,
+    /// Share of their volume other apps keep while recording, when
+    /// `mute_while_recording` is on (Windows only; elsewhere they're muted).
+    #[serde(default = "default_other_audio_volume")]
+    pub other_audio_volume: f32,
     #[serde(default)]
     pub append_trailing_space: bool,
     #[serde(default = "default_app_language")]
@@ -655,6 +659,10 @@ fn default_recording_retention_period() -> RecordingRetentionPeriod {
 
 fn default_audio_feedback_volume() -> f32 {
     1.0
+}
+
+fn default_other_audio_volume() -> f32 {
+    0.5
 }
 
 fn default_sound_theme() -> SoundTheme {
@@ -1005,6 +1013,7 @@ pub fn get_default_settings() -> AppSettings {
         post_process_prompts: default_post_process_prompts(),
         post_process_selected_prompt_id: None,
         mute_while_recording: false,
+        other_audio_volume: default_other_audio_volume(),
         append_trailing_space: false,
         app_language: default_app_language(),
         theme: default_theme(),

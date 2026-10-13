@@ -256,6 +256,10 @@
       "volume": {
         "title": "Volumen",
         "description": "Ajusta el volumen de los sonidos de retroalimentación de audio"
+      },
+      "otherAudioVolume": {
+        "title": "Volumen del resto del audio",
+        "description": "Qué tan alto suenan las demás aplicaciones mientras dictas, como parte de su volumen normal"
       }
     },
     "advanced": {

@@ -256,6 +256,10 @@
       "volume": {
         "title": "Głośność",
         "description": "Dostosuj głośność dźwięków informacyjnych"
+      },
+      "otherAudioVolume": {
+        "title": "Głośność innego dźwięku",
+        "description": "Jak głośno pozostają inne aplikacje podczas dyktowania, jako część ich zwykłej głośności"
       }
     },
     "advanced": {

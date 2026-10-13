@@ -256,6 +256,10 @@
       "volume": {
         "title": "Volume",
         "description": "Regola il volume del feedback audio"
+      },
+      "otherAudioVolume": {
+        "title": "Volume dell'altro audio",
+        "description": "Quanto restano alte le altre app mentre detti, come quota del loro volume normale"
       }
     },
     "advanced": {

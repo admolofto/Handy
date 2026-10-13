@@ -256,6 +256,10 @@
       "volume": {
         "title": "Volum",
         "description": "Ajusta el volum dels avisos sonors"
+      },
+      "otherAudioVolume": {
+        "title": "Volum de l'altre àudio",
+        "description": "Com de fort queden les altres aplicacions mentre dictes, com a part del seu volum normal"
       }
     },
     "advanced": {

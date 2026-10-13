@@ -256,6 +256,10 @@
       "volume": {
         "title": "Ses Seviyesi",
         "description": "Sesli geri bildirimlerin ses seviyesini ayarlayın"
+      },
+      "otherAudioVolume": {
+        "title": "Diğer ses düzeyi",
+        "description": "Dikte ederken diğer uygulamaların normal ses düzeylerine göre ne kadar yüksek kalacağı"
       }
     },
     "advanced": {

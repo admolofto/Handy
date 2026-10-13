@@ -256,6 +256,10 @@
       "volume": {
         "title": "音量",
         "description": "オーディオフィードバックの音量を調整"
+      },
+      "otherAudioVolume": {
+        "title": "他のオーディオの音量",
+        "description": "音声入力中に他のアプリが保つ音量（通常の音量に対する割合）"
       }
     },
     "advanced": {

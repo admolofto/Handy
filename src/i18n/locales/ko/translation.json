@@ -236,6 +236,10 @@
       "volume": {
         "title": "볼륨",
         "description": "오디오 피드백 사운드의 볼륨 조절"
+      },
+      "otherAudioVolume": {
+        "title": "다른 오디오 볼륨",
+        "description": "받아쓰는 동안 다른 앱이 유지하는 음량(평소 음량 대비 비율)"
       }
     },
     "models": {

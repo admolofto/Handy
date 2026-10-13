@@ -256,6 +256,10 @@
       "volume": {
         "title": "Lautstärke",
         "description": "Lautstärke der Audio-Feedback-Töne anpassen"
+      },
+      "otherAudioVolume": {
+        "title": "Lautstärke anderer Audioquellen",
+        "description": "Wie laut andere Apps beim Diktieren bleiben, als Anteil ihrer normalen Lautstärke"
       }
     },
     "advanced": {
